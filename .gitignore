@@ -8,6 +8,7 @@ kobart_best_model/
 백업(1481_200)/
 백업(1381_300)/
 kobart_summary_finetuned/
+.streamlit/
 
 # C extensions
 *.so
