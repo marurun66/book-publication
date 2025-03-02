@@ -1,4 +1,3 @@
-import os
 import time
 import requests
 import streamlit as st
@@ -107,11 +106,18 @@ def run_1():
     # ✅ "이 책이 맞아요" 버튼
     if st.button("✅ 이 책이 맞아요", key=f"book_{book_index}_yes"):
         st.success(f"🎉 '{book['title']}' 책을 찾았습니다!")
+        col1,col2,col3 = st.columns([1,1,1])
+        with col1:
+            pass
+        with col2:
+            st.image("image/book_hirameki_keihatsu_woman.png", width=300)
+        with col3:
+            pass
         st.balloons()
         st.session_state["book_index"] = 0  # 검색이 끝났으니 인덱스 초기화
         st.session_state["books_displayed"] = []  # 리스트 초기화
         st.session_state.page = "book_search"  # 페이지 전환
-        time.sleep(2)
+        time.sleep(3)
         st.rerun()
     user_story = st.session_state["user_story"]+"라는 줄거리의 소설은"
     encoded_user_story = urllib.parse.quote(user_story)
