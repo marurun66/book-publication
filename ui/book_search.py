@@ -3,10 +3,10 @@ import faiss
 import json
 import requests
 from sentence_transformers import SentenceTransformer
-
+@st.cache_data(ttl=3600)
 def load_faiss():
     return faiss.read_index("./modeling/book_faiss_cosine_index.bin")
-
+@st.cache_data(ttl=3600)
 def load_books():
     with open("./data/merged_books_filtered.json", "r", encoding="utf-8") as f:
         return json.load(f)
@@ -32,7 +32,7 @@ def search_naver_api(user_query):
     else:
         st.warning(f"🚨 네이버 API 호출 실패: {response.status_code}")
         return []
-
+@st.cache_data(ttl=3600)
 def find_similar_books(user_story, top_k=5):
     faiss_index = load_faiss()
     books_data = load_books()

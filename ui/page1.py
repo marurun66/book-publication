@@ -8,30 +8,45 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
 
-# ✅ Google Drive 인증 함수
+# ✅ Google Drive 인증 함수 (예외 처리 추가)
 def authenticate_gdrive():
-    creds_dict = {
-        "type": "service_account",
-        "project_id": "neon-bank-447604-s6",
-        "private_key_id": st.secrets["gdrive"]["private_key_id"],
-        "private_key": st.secrets["gdrive"]["private_key"].replace("\\n", "\n"),
-        "client_email": st.secrets["gdrive"]["client_email"],
-        "client_id": st.secrets["gdrive"]["client_id"],
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": st.secrets["gdrive"]["client_x509_cert_url"],
-    }
+    try:
+        # 🔍 Streamlit secrets 로드 확인
+        if "gdrive" not in st.secrets:
+            st.error("⚠️ `secrets.toml`이 설정되지 않았습니다. Streamlit Secrets Manager에서 설정해 주세요.")
+            return None
 
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(
-        creds_dict, scopes=["https://www.googleapis.com/auth/drive"]
-    )
+        creds_dict = {
+            "type": "service_account",
+            "project_id": "neon-bank-447604-s6",
+            "private_key_id": st.secrets["gdrive"].get("private_key_id", ""),
+            "private_key": st.secrets["gdrive"].get("private_key", "").replace("\\n", "\n"),
+            "client_email": st.secrets["gdrive"].get("client_email", ""),
+            "client_id": st.secrets["gdrive"].get("client_id", ""),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": st.secrets["gdrive"].get("client_x509_cert_url", ""),
+        }
 
-    gauth = GoogleAuth()
-    gauth.credentials = creds
-    drive = GoogleDrive(gauth)
+        # 🚨 필수 키가 없을 경우 예외 처리
+        missing_keys = [key for key, value in creds_dict.items() if not value]
+        if missing_keys:
+            st.error(f"⚠️ `secrets.toml`에서 다음 필수 키가 누락되었습니다: {', '.join(missing_keys)}")
+            return None
 
-    return drive
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(
+            creds_dict, scopes=["https://www.googleapis.com/auth/drive"]
+        )
+
+        gauth = GoogleAuth()
+        gauth.credentials = creds
+        drive = GoogleDrive(gauth)
+
+        return drive
+    except KeyError as e:
+        st.error(f"⚠️ `secrets.toml`에서 필요한 키가 누락되었습니다: {str(e)}")
+        return None
 
 # 📌 secrets.toml에서 Naver API 키 가져오기
 def get_naver_api_keys():
@@ -104,6 +119,7 @@ def save_feedback():
 
 
 # 📌 UI 실행 함수
+
 def run_1():
 
     if "book_index" not in st.session_state:
