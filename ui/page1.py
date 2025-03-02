@@ -47,6 +47,7 @@ def save_feedback():
 
     file_path = "book_feedback.txt"
     user_story = st.session_state["user_story"]
+    print("Saving feedback to:", file_path)
     # 의견을 파일에 저장
     with open(file_path, "a") as f:
         f.write(f"Story: {user_story}\n")
@@ -55,6 +56,7 @@ def save_feedback():
     # 피드백 저장 상태를 True로 설정
     st.session_state["feedback_saved"] = True
     st.success("피드백이 저장되었습니다! 감사합니다.")
+    st.write(f"📂 피드백이 저장된 위치: `{file_path}`")
     st.session_state["book_index"] = 0  # 검색이 끝났으니 인덱스 초기화
     st.session_state["books_displayed"] = []  # 리스트 초기화
     st.session_state.page = "book_search"  # 페이지 전환
