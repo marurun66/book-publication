@@ -3,7 +3,7 @@ import requests
 import streamlit as st
 import toml
 import urllib
-
+import os
 
 # 📌 secrets.toml에서 Naver API 키 가져오기
 def get_naver_api_keys():
@@ -45,6 +45,7 @@ def save_feedback():
         st.warning("피드백을 입력해 주세요.")  # 피드백이 없을 경우 경고
         return  # 피드백이 없으면 저장하지 않음
 
+
     file_path = "book_feedback.txt"
     user_story = st.session_state["user_story"]
     print("Saving feedback to:", file_path)
@@ -56,6 +57,7 @@ def save_feedback():
     # 피드백 저장 상태를 True로 설정
     st.session_state["feedback_saved"] = True
     st.success("피드백이 저장되었습니다! 감사합니다.")
+    st.write("현재 작업 디렉토리:", os.getcwd())
     st.write(f"📂 피드백이 저장된 위치: `{file_path}`")
     st.session_state["book_index"] = 0  # 검색이 끝났으니 인덱스 초기화
     st.session_state["books_displayed"] = []  # 리스트 초기화
