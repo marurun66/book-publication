@@ -4,6 +4,34 @@ import streamlit as st
 import toml
 import urllib
 import os
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive
+from oauth2client.service_account import ServiceAccountCredentials
+
+# ✅ Google Drive 인증 함수
+def authenticate_gdrive():
+    creds_dict = {
+        "type": "service_account",
+        "project_id": "neon-bank-447604-s6",
+        "private_key_id": st.secrets["gdrive"]["private_key_id"],
+        "private_key": st.secrets["gdrive"]["private_key"].replace("\\n", "\n"),
+        "client_email": st.secrets["gdrive"]["client_email"],
+        "client_id": st.secrets["gdrive"]["client_id"],
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": st.secrets["gdrive"]["client_x509_cert_url"],
+    }
+
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(
+        creds_dict, scopes=["https://www.googleapis.com/auth/drive"]
+    )
+
+    gauth = GoogleAuth()
+    gauth.credentials = creds
+    drive = GoogleDrive(gauth)
+
+    return drive
 
 # 📌 secrets.toml에서 Naver API 키 가져오기
 def get_naver_api_keys():
@@ -38,30 +66,40 @@ def get_book_info_from_naver(book_title):
     return None
 
 
-# 피드백 저장 함수
+# ✅ 피드백 저장 및 Google Drive 업로드 함수
 def save_feedback():
-    feedback_text = st.session_state.get("feedback_text", "")  # 폼에서 입력된 피드백을 가져옴
-    if not feedback_text:  # 피드백 내용이 없을 경우 경고
-        st.warning("피드백을 입력해 주세요.")  # 피드백이 없을 경우 경고
-        return  # 피드백이 없으면 저장하지 않음
+    feedback_text = st.session_state.get("feedback_text", "").strip()
+    if not feedback_text:
+        st.warning("⚠️ 피드백을 입력해 주세요.")
+        return
 
+    user_story = st.session_state.get("user_story", "No Story Provided")
 
-    file_path = "book_feedback.txt"
-    user_story = st.session_state["user_story"]
-    print("Saving feedback to:", file_path)
-    # 의견을 파일에 저장
-    with open(file_path, "a") as f:
+    # 📌 로컬에 파일 저장 (임시 파일)
+    file_name = "book_feedback.txt"
+    local_path = os.path.join("/tmp", file_name)  # 배포 환경에서는 /tmp 사용
+    with open(local_path, "a") as f:
         f.write(f"Story: {user_story}\n")
         f.write(f"Feedback: {feedback_text}\n")
-        f.write("-" * 40 + "\n")  # 구분선 추가
-    # 피드백 저장 상태를 True로 설정
+        f.write("-" * 40 + "\n")
+
+    # 📌 Google Drive에 업로드
+    drive = authenticate_gdrive()
+    folder_id = st.secrets["gdrive"]["folder_id"]  # Google Drive 폴더 ID
+
+    file_drive = drive.CreateFile({"title": file_name, "parents": [{"id": folder_id}]})
+    file_drive.SetContentFile(local_path)
+    file_drive.Upload()
+
+    st.success("✅ 피드백이 Google Drive에 저장되었습니다!")
+    st.write(f"📂 [Google Drive에서 확인하기](https://drive.google.com/drive/folders/{folder_id})")
+
+    # 📌 상태 초기화
     st.session_state["feedback_saved"] = True
-    st.success("피드백이 저장되었습니다! 감사합니다.")
-    st.write("현재 작업 디렉토리:", os.getcwd())
-    st.write(f"📂 피드백이 저장된 위치: `{file_path}`")
-    st.session_state["book_index"] = 0  # 검색이 끝났으니 인덱스 초기화
-    st.session_state["books_displayed"] = []  # 리스트 초기화
-    st.session_state.page = "book_search"  # 페이지 전환
+    st.session_state["feedback_text"] = ""
+    st.session_state["book_index"] = 0
+    st.session_state["books_displayed"] = []
+    st.session_state.page = "book_search"
 
 
 
