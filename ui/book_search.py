@@ -13,27 +13,14 @@ def load_books():
     with open("./data/merged_books_filtered.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
-def search_naver_api(user_query):
-    client_id = st.secrets["NAVER_CLIENT_ID"]
-    client_secret = st.secrets["NAVER_CLIENT_SECRET"]
-    url = "https://openapi.naver.com/v1/search/book.json"
-    
-    headers = {
-        "X-Naver-Client-Id": client_id,
-        "X-Naver-Client-Secret": client_secret
-    }
-    params = {
-        "query": user_query,
-        "display": 5,
-        "sort": "sim"
-    }
-    
-    response = requests.get(url, headers=headers, params=params)
-    if response.status_code == 200:
-        return response.json().get("items", [])
-    else:
-        st.error(f"🚨 네이버 API 호출 실패: {response.status_code}")
-        return []
+def get_books_count():
+    try:
+        books_data = load_books() 
+        return len(books_data)
+    except FileNotFoundError:
+        return 0
+    except json.JSONDecodeError:
+        return 0
 
 @st.cache_resource(ttl=3600)
 def find_similar_books(user_story, top_k=5):
@@ -56,6 +43,8 @@ def find_similar_books(user_story, top_k=5):
     return recommended_books
 
 def run_search_books():
+    # 책의 개수를 가져와서 동적으로 마크다운에 반영
+
     col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         pass
@@ -64,18 +53,19 @@ def run_search_books():
     with col3:
         if st.button("👩🏻‍💻 개발과정 보러가기"):
             st.session_state.page = "page2"
-            st.experimental_rerun()
-
-    st.markdown("""
+            st.rerun()
+    book_count = get_books_count()
+    st.markdown(f"""
         <div style="position: relative; background-color: #fdfdfd; padding: 10px 25px 5px 65px; border-radius: 0px 10px; border: 1px solid #e5e5e5; box-shadow: 1px 2px 3px 1px rgba(0,0,0,.1);">
             <div style="position: absolute; top: -1px; left: 14px; width: 30px; height: 47px; background-color: #a7e7c4;">&nbsp;</div>
             <div style="position: absolute; top: 17px; left: 14px; width: 0; height: 0; border: 15px solid; border-color: transparent transparent #fdfdfd transparent;">&nbsp;</div>
             <h2 style="color: #333333; font-family: 'Georgia', Arial;">🔍 이 책 뭐더라??</h2>
             <p style="color: #555555; font-size: 16px; font-family: 'Arial', sans-serif;">
                 스토리는 어렴풋이 생각 나는데...<br>
-                책 제목이 기억나지 않으신다고요?<br>
-                <strong>대략의 줄거리를 입력하면 그 내용과 비슷한 책을 찾아드립니다.</strong><br>
-                <strong>네이버에서 제공되는 소설 데이터 중, 줄거리가 공개된 1,322권을 기반으로 검색</strong>되며,<br>
+                책 제목이 기억나지 않으신다고요?<br><br>
+                <strong>대략의 줄거리를 입력하면 그 내용과 비슷한 책을 찾아드립니다!</strong><br><br>
+                <strong>네이버에서 제공되는 소설 데이터 중 줄거리가 제공된 소설과<br> 
+                여러분의 피드백으로 추가된 소설 {book_count}권</strong>을 기반으로 검색되며,<br>
                 소설의 엔딩보다는 <strong>시작 부분을 입력</strong>하시는 것이 더 정확한 검색 결과를 얻는 데 도움이 됩니다.
             </p>
             <p style="color: #777777; font-size: 14px; font-family: 'Arial', sans-serif; text-align: center;">

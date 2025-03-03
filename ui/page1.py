@@ -106,13 +106,13 @@ def save_feedback():
             # 파일 다시 업로드
             file_drive.SetContentFile(local_path)
             file_drive.Upload()
-            st.success("✅ 피드백이 기존 파일에 저장되었습니다!")
+            st.success("✅ 피드백이 저장되었습니다! 의견 감사합니다.")
         else:
             # 파일이 없으면 새로 생성
             file_drive = drive.CreateFile({"title": file_name, "parents": [{"id": folder_id}]})
             file_drive.SetContentFile(local_path)
             file_drive.Upload()
-            st.success("✅ 피드백이 새 파일로 저장되었습니다!")
+            st.success("✅ 피드백이 저장되었습니다! 의견 감사합니다.")
 
         st.write(f"📂 [Google Drive에서 확인하기](https://drive.google.com/drive/folders/{folder_id})")
 
@@ -189,7 +189,7 @@ def run_1():
             st.session_state["book_index"] += 1  # 다음 책으로 이동
         else:
             st.write("❌ 더 이상 후보가 없습니다. 구글에서 검색해볼까요?")
-            user_story = st.session_state["user_story"] + "라는 줄거리의 소설은"
+            user_story = st.session_state["user_story"].replace("\n", " ") + "라는 줄거리의 소설은"
             encoded_user_story = urllib.parse.quote(user_story)
             st.markdown(f"[구글에서 줄거리를 검색](https://www.google.com/search?q={encoded_user_story})")
 
