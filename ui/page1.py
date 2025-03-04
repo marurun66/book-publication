@@ -134,7 +134,7 @@ def run_1():
         st.session_state["books_displayed"] = []
 
     if "books_not_found" not in st.session_state or len(st.session_state["books_not_found"]) == 0:
-        st.error("🔍 검색할 책이 없습니다.")
+        st.error("🔍 검색할 소설이 없습니다.")
         return
 
     # 현재 책 정보 가져오기
@@ -153,7 +153,7 @@ def run_1():
         for idx, displayed_book in enumerate(st.session_state["books_displayed"]):
             col1, col2 = st.columns([4, 2])
             with col1:
-                st.subheader(f"📚 이 책일까요? - 후보 {idx + 1}")
+                st.subheader(f"📚 이 소설일까요? - 후보 {idx + 1}")
                 st.subheader(f"📖 **{displayed_book['title']}**")
                 st.write(f"✍️ 작가: {displayed_book['author']}")
                 st.write(f"📌 출판사: {displayed_book['publisher']}")
@@ -166,8 +166,8 @@ def run_1():
     else:
         st.write(f"❌ '{book['title']}'에 대한 정보를 찾을 수 없습니다.")
 
-    # ✅ "이 책이 맞아요" 버튼
-    if st.button("✅ 이 책이 맞아요", key=f"book_{book_index}_yes"):
+    # ✅ "이 소설이 맞아요" 버튼
+    if st.button("✅ 이 소설이 맞아요", key=f"book_{book_index}_yes"):
         st.success(f"🎉 '{book['title']}' 책을 찾았습니다!")
         col1, col2, col3 = st.columns([1, 1, 1])
         with col1:
@@ -184,7 +184,7 @@ def run_1():
         st.rerun()
 
     # 피드백 저장
-    if st.button("❌ 이 책이 아니에요", key=f"book_{book_index}_no"):
+    if st.button("❌ 이 소설이 아니에요", key=f"book_{book_index}_no"):
         if st.session_state["book_index"] < len(st.session_state["books_not_found"]) - 1:
             st.session_state["book_index"] += 1  # 다음 책으로 이동
         else:
@@ -199,5 +199,5 @@ def run_1():
 
             # 폼을 사용하여 피드백을 받음
             with st.form(key="feedback_form"):
-                st.text_area("이 책이었을 것 같아요 (의견을 남겨주세요)", placeholder="책에 대한 의견을 남겨주세요...", key="feedback_text")
+                st.text_area("이 소설이었을 것 같아요 (의견을 남겨주세요)", placeholder="책에 대한 의견을 남겨주세요...", key="feedback_text")
                 st.form_submit_button("피드백 저장", on_click=save_feedback)  # on_click으로 함수 지정

@@ -6,7 +6,7 @@ from ui.page2 import run_2
 
 st.set_page_config(
     layout="centered",
-    page_title="이 책 뭐더라?",
+    page_title="이 소설 뭐더라?",
     page_icon="📚",
 )
 def main():
